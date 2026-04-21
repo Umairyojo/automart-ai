@@ -1,0 +1,38 @@
+# ============================
+# AutoMart root .gitignore
+# ============================
+
+# Legacy / unrelated stacks (not part of active deployment)
+backend/
+website/
+
+# Environment / secrets
+**/.env
+**/.env.local
+**/.env.*.local
+!backend_python/.env.example
+!frontend/.env.local.example
+
+# Python artifacts
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.coverage
+**/htmlcov/
+
+# Backend runtime data
+backend_python/instance/
+
+# Node / Next.js artifacts
+**/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 230 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 30% 15%;
+    --primary: 250 85% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 230 30% 15%;
+    --muted: 220 20% 90%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 250 85% 95%;
+    --accent-foreground: 250 85% 40%;
+    --destructive: 350 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 20% 85%;
+    --input: 220 20% 85%;
+    --ring: 250 85% 60%;
+    --radius: 0.75rem;
+  }
+  
+  .dark {
+    --background: 230 40% 5%;
+    --foreground: 210 40% 98%;
+    --card: 230 40% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 230 40% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 250 100% 70%;
+    --primary-foreground: 250 10% 10%;
+    --secondary: 230 30% 15%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 230 30% 15%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 250 40% 20%;
+    --accent-foreground: 250 100% 70%;
+    --destructive: 350 100% 64%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 30% 18%;
+    --input: 230 30% 18%;
+    --ring: 250 100% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary-foreground));
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Car card hover effect */
+.car-card-hover {
+  transition: all 0.3s ease;
+}
+
+.car-card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--secondary)) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.chatbot-glow-outline {
+  background: conic-gradient(
+    from 0deg,
+    rgba(124, 58, 237, 0.66),
+    rgba(255, 42, 85, 0.66),
+    rgba(0, 212, 255, 0.66),
+    rgba(124, 58, 237, 0.66)
+  );
+  filter: saturate(1.2);
+  opacity: 0.55;
+}
+
+.chatbot-glow-blur {
+  background: radial-gradient(circle at 25% 20%, rgba(124, 58, 237, 0.35), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(0, 212, 255, 0.35), transparent 50%);
+  filter: blur(16px);
+  opacity: 0.6;
+}
+
