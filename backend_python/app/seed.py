@@ -201,13 +201,52 @@ def _ensure_demo_coupons() -> None:
         db.session.commit()
 
 
+def ensure_bootstrap_admin(app: Flask) -> None:
+    """
+    Ensure a usable admin account always exists, especially on free hosting
+    where local SQLite data can be reset.
+    """
+    with app.app_context():
+        admin_email = str(app.config.get("ADMIN_EMAIL") or "admin@automart.local").strip().lower()
+        admin_name = str(app.config.get("ADMIN_NAME") or "Admin").strip() or "Admin"
+        admin_password = str(app.config.get("ADMIN_PASSWORD") or "admin123")
+        force_password_reset = bool(app.config.get("ADMIN_FORCE_PASSWORD_RESET", False))
+
+        user = User.query.filter_by(email=admin_email).first()
+        changed = False
+        if not user:
+            user = User(email=admin_email, name=admin_name, is_admin=True, is_blocked=False)
+            user.set_password(admin_password)
+            db.session.add(user)
+            changed = True
+        else:
+            if not user.is_admin:
+                user.is_admin = True
+                changed = True
+            if user.is_blocked:
+                user.is_blocked = False
+                changed = True
+            if (user.name or "").strip() != admin_name:
+                user.name = admin_name
+                changed = True
+            if force_password_reset:
+                user.set_password(admin_password)
+                changed = True
+
+        if changed:
+            db.session.commit()
+
+
 def seed_if_empty(app: Flask) -> None:
     """Create users, vehicles, and products when tables are empty."""
     with app.app_context():
-        admin = User.query.filter_by(email="admin@automart.local").first()
+        admin_email = str(app.config.get("ADMIN_EMAIL") or "admin@automart.local").strip().lower()
+        admin_name = str(app.config.get("ADMIN_NAME") or "Admin").strip() or "Admin"
+        admin_password = str(app.config.get("ADMIN_PASSWORD") or "admin123")
+        admin = User.query.filter_by(email=admin_email).first()
         if not admin:
-            admin = User(email="admin@automart.local", name="Admin", is_admin=True)
-            admin.set_password("admin123")
+            admin = User(email=admin_email, name=admin_name, is_admin=True)
+            admin.set_password(admin_password)
             db.session.add(admin)
 
         demo = User.query.filter_by(email="demo@automart.local").first()

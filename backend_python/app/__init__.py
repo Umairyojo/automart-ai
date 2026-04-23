@@ -282,10 +282,12 @@ def create_app(config_class: type = Config) -> Flask:
         db.create_all()
         _ensure_schema_columns()
         _normalize_product_metadata()
-        from .seed import reindex_product_embeddings, seed_if_empty
+        from .seed import ensure_bootstrap_admin, reindex_product_embeddings, seed_if_empty
 
         if app.config.get("SEED_ON_STARTUP", True):
             seed_if_empty(app)
+        if not app.config.get("TESTING", False):
+            ensure_bootstrap_admin(app)
         _normalize_product_prices_for_inr()
         _normalize_vehicle_types()
         _bootstrap_compatibility_mappings()

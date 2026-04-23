@@ -35,6 +35,12 @@ CANCELABLE_STATUSES = {"pending", "confirmed", "processing", "payment_pending"}
 RAZORPAY_ORDER_ENDPOINT = "https://api.razorpay.com/v1/orders"
 
 
+def _cacheable_json(payload: dict, max_age_seconds: int = 60):
+    res = jsonify(payload)
+    res.headers["Cache-Control"] = f"public, max-age={max_age_seconds}, stale-while-revalidate=120"
+    return res
+
+
 def _cart() -> dict[str, int]:
     raw = session.get("cart") or {}
     out: dict[str, int] = {}
@@ -206,7 +212,7 @@ def list_products():
             | (Product.brand.ilike(like))
         )
     products = query.order_by(Product.name).all()
-    return jsonify({"products": [p.to_dict() for p in products]})
+    return _cacheable_json({"products": [p.to_dict() for p in products]}, max_age_seconds=60)
 
 
 @bp.route("/products/<int:pid>", methods=["GET"])
@@ -248,12 +254,13 @@ def products_meta():
     ]
     if not categories:
         categories = sorted({p.category for p in products if p.category})
-    return jsonify(
+    return _cacheable_json(
         {
             "brands": brands,
             "categories": categories,
             "product_types": ["vehicleSpecific", "universal", "companyBranded"],
-        }
+        },
+        max_age_seconds=300,
     )
 
 
@@ -293,7 +300,7 @@ def list_vehicles():
         )
 
     vehicles = query.order_by(Vehicle.company, Vehicle.model, Vehicle.year.desc()).all()
-    return jsonify({"vehicles": [v.to_dict() for v in vehicles]})
+    return _cacheable_json({"vehicles": [v.to_dict() for v in vehicles]}, max_age_seconds=120)
 
 
 @bp.route("/vehicles/<int:vid>/parts", methods=["GET"])
@@ -346,12 +353,13 @@ def list_vehicle_parts(vid: int):
         scored.append((score, p))
     scored.sort(key=lambda item: (-item[0], item[1].name))
 
-    return jsonify(
+    return _cacheable_json(
         {
             "vehicle": vehicle.to_dict(),
             "products": [p.to_dict() for _, p in scored],
             "matching_mode": "mapped" if mapped_ids else "fallback",
-        }
+        },
+        max_age_seconds=90,
     )
 
 

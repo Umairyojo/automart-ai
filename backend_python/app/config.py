@@ -80,3 +80,9 @@ class Config:
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "0") == "1"
     REMEMBER_COOKIE_SAMESITE = os.environ.get("REMEMBER_COOKIE_SAMESITE", "Lax")
     REMEMBER_COOKIE_SECURE = os.environ.get("REMEMBER_COOKIE_SECURE", "0") == "1"
+
+    # Bootstrap admin account for deployed environments where DB can be reset.
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@automart.local").strip().lower()
+    ADMIN_NAME = os.environ.get("ADMIN_NAME", "Admin").strip() or "Admin"
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+    ADMIN_FORCE_PASSWORD_RESET = os.environ.get("ADMIN_FORCE_PASSWORD_RESET", "0") == "1"

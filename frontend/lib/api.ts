@@ -278,7 +278,94 @@ interface ApiError extends Error {
   status?: number;
 }
 
-async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
+type FetchJsonOptions = {
+  cacheTtlMs?: number;
+  timeoutMs?: number;
+};
+
+type CacheEntry = {
+  expiresAt: number;
+  payload: unknown;
+};
+
+const GET_CACHE_PREFIX = "automart:get:";
+const inMemoryGetCache = new Map<string, CacheEntry>();
+
+function nowMs() {
+  return Date.now();
+}
+
+function makeCacheKey(path: string) {
+  return `${GET_CACHE_PREFIX}${path}`;
+}
+
+function readCachedPayload<T>(cacheKey: string): T | null {
+  const now = nowMs();
+  const memory = inMemoryGetCache.get(cacheKey);
+  if (memory && memory.expiresAt > now) {
+    return memory.payload as T;
+  }
+  if (memory && memory.expiresAt <= now) {
+    inMemoryGetCache.delete(cacheKey);
+  }
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const raw = window.localStorage.getItem(cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CacheEntry;
+    if (!parsed || typeof parsed.expiresAt !== "number") {
+      window.localStorage.removeItem(cacheKey);
+      return null;
+    }
+    if (parsed.expiresAt <= now) {
+      window.localStorage.removeItem(cacheKey);
+      return null;
+    }
+    inMemoryGetCache.set(cacheKey, parsed);
+    return parsed.payload as T;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedPayload(cacheKey: string, payload: unknown, ttlMs: number) {
+  const entry: CacheEntry = {
+    expiresAt: nowMs() + ttlMs,
+    payload,
+  };
+  inMemoryGetCache.set(cacheKey, entry);
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(cacheKey, JSON.stringify(entry));
+  } catch {
+    // Ignore storage quota and privacy-mode failures.
+  }
+}
+
+async function fetchJson<T>(
+  path: string,
+  init?: RequestInit,
+  options?: FetchJsonOptions
+): Promise<T> {
+  const method = (init?.method || "GET").toUpperCase();
+  const cacheTtlMs = method === "GET" ? options?.cacheTtlMs || 0 : 0;
+  const timeoutMs = options?.timeoutMs ?? (method === "GET" ? 15000 : 20000);
+  const cacheKey = cacheTtlMs > 0 ? makeCacheKey(path) : "";
+
+  if (cacheKey) {
+    const cached = readCachedPayload<T>(cacheKey);
+    if (cached != null) {
+      return cached;
+    }
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   const res = await fetch(path, {
     credentials: "include",
     headers: {
@@ -286,12 +373,18 @@ async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers || {}),
     },
     ...init,
+    signal: init?.signal || controller.signal,
+  }).finally(() => {
+    clearTimeout(timeoutId);
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error((data as any)?.error || res.statusText) as ApiError;
     err.status = res.status;
     throw err;
+  }
+  if (cacheKey) {
+    writeCachedPayload(cacheKey, data, cacheTtlMs);
   }
   return data as T;
 }
@@ -307,7 +400,9 @@ export async function getProducts(params?: {
     if (v) qs.set(k, String(v));
   });
   const query = qs.toString();
-  return fetchJson<{ products: Product[] }>(`/api/products${query ? `?${query}` : ""}`);
+  return fetchJson<{ products: Product[] }>(`/api/products${query ? `?${query}` : ""}`, undefined, {
+    cacheTtlMs: 120000,
+  });
 }
 
 export async function getProductBySlug(slug: string) {
@@ -316,7 +411,11 @@ export async function getProductBySlug(slug: string) {
 
 export async function getProductsMeta() {
   return fetchJson<{ brands: string[]; categories: string[]; product_types: ProductType[] }>(
-    "/api/products/meta"
+    "/api/products/meta",
+    undefined,
+    {
+      cacheTtlMs: 300000,
+    }
   );
 }
 
@@ -334,11 +433,15 @@ export async function getVehicles(params?: {
     if (v) qs.set(k, String(v));
   });
   const query = qs.toString();
-  return fetchJson<{ vehicles: Vehicle[] }>(`/api/vehicles${query ? `?${query}` : ""}`);
+  return fetchJson<{ vehicles: Vehicle[] }>(`/api/vehicles${query ? `?${query}` : ""}`, undefined, {
+    cacheTtlMs: 180000,
+  });
 }
 
 export async function getVehicleParts(vehicleId: number) {
-  return fetchJson<{ vehicle: Vehicle; products: Product[] }>(`/api/vehicles/${vehicleId}/parts`);
+  return fetchJson<{ vehicle: Vehicle; products: Product[] }>(`/api/vehicles/${vehicleId}/parts`, undefined, {
+    cacheTtlMs: 120000,
+  });
 }
 
 export async function getCart(coupon?: string) {

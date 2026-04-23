@@ -10,8 +10,8 @@ website/
 **/.env
 **/.env.local
 **/.env.*.local
-!backend_python/.env.example
-!frontend/.env.local.example
+backend_python/.env.example
+frontend/.env.local.example
 
 # Python artifacts
 **/.venv/
