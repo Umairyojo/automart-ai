@@ -418,7 +418,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 pt-24 min-h-screen">
+    <div className="profile-theme relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,hsl(var(--background))_0%,hsl(var(--secondary))_48%,hsl(var(--background))_100%)] dark:bg-background">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 pt-24">
       <div className="mb-8">
         <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">{userName} Profile</h1>
         <p className="text-slate-400 text-lg">
@@ -905,6 +906,7 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
