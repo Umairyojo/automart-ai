@@ -17,6 +17,7 @@ Optional:
 Required:
 
 - `FLASK_SECRET_KEY=<long-random-secret>`
+- `DATABASE_URL=<persistent-database-url>`
 - `ORIGIN=https://<your-frontend-domain>`
 - `PUBLIC_BACKEND_URL=https://<your-backend-domain>`
 - `HOST=0.0.0.0`
@@ -45,8 +46,14 @@ Images:
 - `CLOUDINARY_API_KEY=<api-key>`
 - `CLOUDINARY_API_SECRET=<api-secret>`
 - `CLOUDINARY_UPLOAD_FOLDER=automart`
+- `REQUIRE_CLOUDINARY_UPLOADS=1`
 - `IMAGE_MAX_MB=6`
 - `RAW_IMAGE_MAX_MB=20`
+
+Important:
+
+- Do not use the default SQLite database for the deployed backend. Free hosting filesystems can be recreated, so admin-created products, orders, and users can disappear and the app will seed the demo catalog again.
+- Do not rely on local `/uploads` storage in deployment. Use Cloudinary; otherwise uploaded images can disappear after a service restart or redeploy.
 
 Payments (optional for real sandbox checkout):
 
@@ -57,7 +64,9 @@ Payments (optional for real sandbox checkout):
 ## Post-deploy checks
 
 1. `GET https://<backend>/api/health` returns `ok: true`
-2. Login/register works from frontend
-3. Admin image upload works
-4. Cart + checkout + orders work
-5. Chatbot fallback works even if OpenAI quota exhausted
+2. Health response has `database_url_configured: true`
+3. Health response has `cloudinary_configured: true`
+4. Login/register works from frontend
+5. Admin image upload works
+6. Cart + checkout + orders work
+7. Chatbot fallback works even if OpenAI quota exhausted

@@ -346,6 +346,23 @@ function writeCachedPayload(cacheKey: string, payload: unknown, ttlMs: number) {
   }
 }
 
+function clearGetCache() {
+  inMemoryGetCache.clear();
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    for (let i = window.localStorage.length - 1; i >= 0; i -= 1) {
+      const key = window.localStorage.key(i);
+      if (key?.startsWith(GET_CACHE_PREFIX)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // Ignore storage access failures.
+  }
+}
+
 async function fetchJson<T>(
   path: string,
   init?: RequestInit,
@@ -353,7 +370,7 @@ async function fetchJson<T>(
 ): Promise<T> {
   const method = (init?.method || "GET").toUpperCase();
   const cacheTtlMs = method === "GET" ? options?.cacheTtlMs || 0 : 0;
-  const timeoutMs = options?.timeoutMs ?? (method === "GET" ? 15000 : 20000);
+  const timeoutMs = options?.timeoutMs ?? (method === "GET" ? 60000 : 30000);
   const cacheKey = cacheTtlMs > 0 ? makeCacheKey(path) : "";
 
   if (cacheKey) {
@@ -366,22 +383,38 @@ async function fetchJson<T>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const res = await fetch(path, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers || {}),
-    },
-    ...init,
-    signal: init?.signal || controller.signal,
-  }).finally(() => {
+  let res: Response;
+  try {
+    res = await fetch(path, {
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers || {}),
+      },
+      ...init,
+      signal: init?.signal || controller.signal,
+    });
+  } catch (e: any) {
+    const isAbort = e?.name === "AbortError";
+    const err = new Error(
+      isAbort
+        ? "Backend is taking too long to respond. Please refresh after a moment."
+        : e?.message || "Network request failed"
+    ) as ApiError;
+    err.status = 0;
+    throw err;
+  } finally {
     clearTimeout(timeoutId);
-  });
+  }
+
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error((data as any)?.error || res.statusText) as ApiError;
     err.status = res.status;
     throw err;
+  }
+  if (method !== "GET") {
+    clearGetCache();
   }
   if (cacheKey) {
     writeCachedPayload(cacheKey, data, cacheTtlMs);

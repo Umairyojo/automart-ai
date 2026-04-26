@@ -71,11 +71,13 @@ def test_admin_crud_users_orders_and_compatibility(client):
             "price": 2999,
             "stock": 30,
             "description": "Brake pads for Creta",
+            "image_url": "https://example.com/images/" + ("battery-" * 90) + "photo.jpg",
             "vehicle_compatibility": "Hyundai Creta 2022 Diesel",
         },
     )
     assert create_product.status_code == 201
     product_id = create_product.json["product"]["id"]
+    assert create_product.json["product"]["image_url"].endswith("photo.jpg")
 
     out_of_stock = client.post(f"/api/admin/products/{product_id}/out-of-stock")
     assert out_of_stock.status_code == 200

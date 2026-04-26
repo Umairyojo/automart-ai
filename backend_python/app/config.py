@@ -21,6 +21,8 @@ class Config:
     INSTANCE_PATH.mkdir(exist_ok=True)
 
     _db_url = os.environ.get("DATABASE_URL", "").strip()
+    if _db_url.startswith("postgres://"):
+        _db_url = "postgresql://" + _db_url[len("postgres://") :]
     if _db_url:
         SQLALCHEMY_DATABASE_URI = _db_url
     else:
@@ -66,6 +68,7 @@ class Config:
     CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "").strip()
     CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "").strip()
     CLOUDINARY_UPLOAD_FOLDER = os.environ.get("CLOUDINARY_UPLOAD_FOLDER", "automart")
+    REQUIRE_CLOUDINARY_UPLOADS = os.environ.get("REQUIRE_CLOUDINARY_UPLOADS", "0") == "1"
     IMAGE_MAX_MB = int(os.environ.get("IMAGE_MAX_MB", "6"))
     RAW_IMAGE_MAX_MB = int(os.environ.get("RAW_IMAGE_MAX_MB", "20"))
 

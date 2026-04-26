@@ -124,4 +124,7 @@ def upload_admin_image(file: FileStorage, folder_hint: str, host_base: str | Non
         except Exception:
             current_app.logger.exception("Cloudinary upload failed, falling back to local storage")
 
+    if current_app.config.get("REQUIRE_CLOUDINARY_UPLOADS"):
+        raise ValueError("Cloudinary is required for deployed image uploads")
+
     return _upload_local(image_bytes, folder_hint=folder_hint, host_base=host_base)

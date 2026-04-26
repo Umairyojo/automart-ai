@@ -32,6 +32,13 @@ def _ensure_schema_columns() -> None:
             to_add.append(
                 "ALTER TABLE products ADD COLUMN product_type TEXT DEFAULT 'vehicleSpecific'"
             )
+        for col in insp.get_columns("products"):
+            if col["name"] == "image_url" and "VARCHAR" in str(col.get("type", "")).upper():
+                dialect = db.engine.dialect.name
+                if dialect == "postgresql":
+                    to_add.append("ALTER TABLE products ALTER COLUMN image_url TYPE TEXT")
+                elif dialect in {"mysql", "mariadb"}:
+                    to_add.append("ALTER TABLE products MODIFY image_url TEXT")
 
     if "vehicles" in tables:
         cols = {c["name"] for c in insp.get_columns("vehicles")}
@@ -39,6 +46,13 @@ def _ensure_schema_columns() -> None:
             to_add.append("ALTER TABLE vehicles ADD COLUMN vehicle_type TEXT DEFAULT 'car'")
         if "image_url" not in cols:
             to_add.append("ALTER TABLE vehicles ADD COLUMN image_url TEXT DEFAULT ''")
+        for col in insp.get_columns("vehicles"):
+            if col["name"] == "image_url" and "VARCHAR" in str(col.get("type", "")).upper():
+                dialect = db.engine.dialect.name
+                if dialect == "postgresql":
+                    to_add.append("ALTER TABLE vehicles ALTER COLUMN image_url TYPE TEXT")
+                elif dialect in {"mysql", "mariadb"}:
+                    to_add.append("ALTER TABLE vehicles MODIFY image_url TEXT")
 
     if "users" in tables:
         cols = {c["name"] for c in insp.get_columns("users")}
@@ -245,12 +259,24 @@ def create_app(config_class: type = Config) -> Flask:
     def api_health():
         from . import ai_service
 
+        cloudinary_configured = bool(
+            (app.config.get("CLOUDINARY_CLOUD_NAME") or "").strip()
+            and (app.config.get("CLOUDINARY_API_KEY") or "").strip()
+            and (app.config.get("CLOUDINARY_API_SECRET") or "").strip()
+        )
+        database_url_configured = bool(os.environ.get("DATABASE_URL", "").strip())
+        public_backend_url = str(app.config.get("PUBLIC_BACKEND_URL") or "")
+        deployed_like = bool(os.environ.get("RENDER") or public_backend_url.startswith("https://"))
+
         return jsonify(
             {
                 "ok": True,
                 "service": "AutoMart Backend",
                 "ai_enabled": bool(ai_service.ai_enabled()),
                 "embed_enabled": bool(app.config.get("AI_EMBED_FOR_SMART_SEARCH", False)),
+                "database_url_configured": database_url_configured,
+                "cloudinary_configured": cloudinary_configured,
+                "local_uploads_ephemeral_risk": bool(deployed_like and not cloudinary_configured),
                 "razorpay_enabled": bool(
                     (app.config.get("RAZORPAY_KEY_ID") or "").strip()
                     and (app.config.get("RAZORPAY_KEY_SECRET") or "").strip()

@@ -38,6 +38,7 @@ ORDER_STATUSES = {
 PRODUCT_TYPES = {"vehicleSpecific", "universal", "companyBranded"}
 VEHICLE_TYPES = {"car", "bike"}
 UPLOAD_FOLDERS = {"product": "products", "vehicle": "vehicles", "general": "general"}
+MAX_IMAGE_URL_LENGTH = 2048
 
 
 def _normalize_category_name(raw: str) -> str:
@@ -146,6 +147,19 @@ def _compatibility_to_dict(row: CompatibilityMapping) -> dict:
     }
 
 
+def _clean_image_url(raw: object) -> str:
+    value = str(raw or "").strip()
+    if not value:
+        return ""
+    if len(value) > MAX_IMAGE_URL_LENGTH:
+        raise ValueError(f"image_url must be {MAX_IMAGE_URL_LENGTH} characters or less")
+    if value.startswith("/uploads/"):
+        return value
+    if not (value.startswith("https://") or value.startswith("http://")):
+        raise ValueError("image_url must start with http://, https://, or /uploads/")
+    return value
+
+
 def admin_required(f):
     @wraps(f)
     def wrapped(*args, **kwargs):
@@ -213,6 +227,11 @@ def admin_create_product():
     except (TypeError, ValueError):
         return jsonify({"error": "invalid price or stock"}), 400
 
+    try:
+        image_url = _clean_image_url(data.get("image_url"))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     p = Product(
         name=name,
         slug=slug,
@@ -222,7 +241,7 @@ def admin_create_product():
         product_type=product_type,
         price=price,
         stock=stock,
-        image_url=(data.get("image_url") or "")[:500],
+        image_url=image_url,
         vehicle_compatibility=(data.get("vehicle_compatibility") or "")[:5000],
         embedding_json="",
     )
@@ -283,7 +302,10 @@ def admin_update_product(pid: int):
         except (TypeError, ValueError):
             return jsonify({"error": "invalid stock"}), 400
     if "image_url" in data:
-        p.image_url = str(data.get("image_url") or "")[:500]
+        try:
+            p.image_url = _clean_image_url(data.get("image_url"))
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
     if "vehicle_compatibility" in data:
         p.vehicle_compatibility = str(data.get("vehicle_compatibility") or "")[:5000]
 
@@ -507,6 +529,11 @@ def admin_create_vehicle():
     if vehicle_type not in VEHICLE_TYPES:
         return jsonify({"error": "invalid vehicle_type"}), 400
 
+    try:
+        image_url = _clean_image_url(data.get("image_url"))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     vehicle = Vehicle(
         company=company[:120],
         model=model[:120],
@@ -514,7 +541,7 @@ def admin_create_vehicle():
         variant=variant[:120],
         fuel_type=fuel_type[:40],
         vehicle_type=vehicle_type,
-        image_url=str(data.get("image_url") or "")[:500],
+        image_url=image_url,
     )
     db.session.add(vehicle)
     db.session.commit()
@@ -553,7 +580,10 @@ def admin_update_vehicle(vid: int):
     if "fuel_type" in data:
         vehicle.fuel_type = str(data.get("fuel_type") or "")[:40]
     if "image_url" in data:
-        vehicle.image_url = str(data.get("image_url") or "")[:500]
+        try:
+            vehicle.image_url = _clean_image_url(data.get("image_url"))
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
     if "vehicle_type" in data:
         v_type = str(data.get("vehicle_type") or "").strip().lower()
         if v_type not in VEHICLE_TYPES:

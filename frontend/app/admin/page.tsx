@@ -805,10 +805,17 @@ export default function AdminPage() {
                 placeholder="Stock"
                 className="rounded-xl bg-slate-900 border border-white/10 px-3 py-2 text-white"
               />
+              <textarea
+                value={productForm.description}
+                onChange={(e) => setProductForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Product description, e.g. Maintenance-free long-life battery for daily use."
+                className="min-h-24 rounded-xl bg-slate-900 border border-white/10 px-3 py-2 text-white md:col-span-3"
+              />
               <input
                 value={productForm.image_url}
                 onChange={(e) => setProductForm((p) => ({ ...p, image_url: e.target.value }))}
-                placeholder="Image URL (optional)"
+                placeholder="Direct image URL (optional, http/https)"
+                maxLength={2048}
                 className="rounded-xl bg-slate-900 border border-white/10 px-3 py-2 text-white md:col-span-2"
               />
               <label className="rounded-xl bg-slate-900 border border-white/10 px-3 py-2 text-slate-300 cursor-pointer text-sm flex items-center justify-between">
@@ -990,7 +997,8 @@ export default function AdminPage() {
               <input
                 value={vehicleForm.image_url}
                 onChange={(e) => setVehicleForm((p) => ({ ...p, image_url: e.target.value }))}
-                placeholder="Vehicle image URL (optional)"
+                placeholder="Direct vehicle image URL (optional)"
+                maxLength={2048}
                 className="rounded-xl bg-slate-900 border border-white/10 px-3 py-2 text-white md:col-span-2"
               />
               <label className="rounded-xl bg-slate-900 border border-white/10 px-3 py-2 text-slate-300 cursor-pointer text-sm flex items-center justify-between">

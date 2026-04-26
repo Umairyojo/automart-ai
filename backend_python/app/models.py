@@ -71,7 +71,7 @@ class Product(db.Model):
     category = db.Column(db.String(64), nullable=False, index=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock = db.Column(db.Integer, default=0, nullable=False)
-    image_url = db.Column(db.String(500), default="")
+    image_url = db.Column(db.Text, default="")
     brand = db.Column(db.String(120), default="", index=True)
     # vehicleSpecific | universal | companyBranded
     product_type = db.Column(db.String(32), default="vehicleSpecific", index=True)
@@ -158,7 +158,7 @@ class Vehicle(db.Model):
     fuel_type = db.Column(db.String(40), default="", nullable=False)
     # car | bike
     vehicle_type = db.Column(db.String(16), default="car", nullable=False, index=True)
-    image_url = db.Column(db.String(500), default="")
+    image_url = db.Column(db.Text, default="")
     created_at = db.Column(db.DateTime, default=utcnow_naive)
     compatibility_mappings = db.relationship(
         "CompatibilityMapping",
