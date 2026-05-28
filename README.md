@@ -1,111 +1,102 @@
-# AutoMart - Vehicle Spare Parts E-Commerce Platform
+<h1 align="center">🚀 AutoMart AI</h1>
 
-AutoMart is a college-level full-stack project for vehicle spare-parts shopping with:
+<h3 align="center">
+AI-Powered Vehicle Spare Parts Ecommerce Platform
+</h3>
 
-- Vehicle-based shopping (select vehicle -> see compatible parts)
-- General spare-parts shopping (without selecting vehicle)
-- Admin panel for catalog, vehicles, compatibility, users, orders, and coupons
-- AI assistant for spare-parts guidance
-- INR pricing, GST/shipping summary, checkout, orders, and invoice
+<p align="center">
+A full stack ecommerce platform designed for intelligent vehicle spare-parts shopping using compatibility-based recommendations, REST APIs, and AI-assisted customer guidance.
+</p>
 
-## Active Architecture
+---
 
-- Frontend: `frontend/` (Next.js 14)
-- Backend: `backend_python/` (Flask + SQLAlchemy)
+## ✨ Key Features
 
-Legacy folders (`backend/`, `website/`) are not part of the active stack.
+✅ Vehicle-Based Spare Parts Shopping  
+✅ Car & Bike Compatibility Support  
+✅ AI-Powered Shopping Assistant  
+✅ Product Search & Filtering  
+✅ Shopping Cart & Checkout Workflow  
+✅ Order & Invoice Management  
+✅ Role-Based Authentication  
+✅ Admin Dashboard  
+✅ Inventory & Category Management  
+✅ Coupon & Offer System  
+✅ Responsive Full Stack UI  
 
-## Key Features
+---
 
-- User auth: register, login, logout, forgot/reset password, change password
-- Profile: addresses, My Garage (saved vehicles), order history
-- Vehicle search by company/model/year/variant/fuel type
-- Product catalog with filters and vehicle compatibility mapping
-- Cart + coupon + checkout
-- Payment modes:
-  - COD
-  - Demo payment simulation
-  - Razorpay sandbox (optional)
-- Admin dashboard with CRUD for:
-  - products, vehicles, categories, brands
-  - compatibility mappings
-  - users and orders
-  - coupons
-- AI chatbot with cost/rate controls
+## 🛠️ Tech Stack
 
-## Local Setup
+### Frontend
+- React.js / Next.js
+- HTML
+- CSS
+- JavaScript
 
-### 1) Backend (Flask)
+### Backend
+- Flask
+- Java Backend Concepts
+- REST APIs
 
-```powershell
-cd backend_python
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-python run.py
+### Database
+- MySQL / SQLite
+
+### AI Features
+- AI Chatbot Assistant
+- Vehicle Compatibility Guidance
+- Product Recommendation Logic
+
+---
+
+## 🧠 System Workflow
+
+```text
+User Selects Vehicle
+        ↓
+Platform Filters Compatible Parts
+        ↓
+User Searches / Browses Products
+        ↓
+AI Assistant Recommends Suitable Products
+        ↓
+Cart & Checkout Process
+        ↓
+Order & Invoice Generation
+        ↓
+Admin Manages Inventory & Orders
 ```
 
-Backend URLs:
+---
 
-- API: `http://127.0.0.1:5000/api`
-- Health: `http://127.0.0.1:5000/api/health`
+## 🔐 Authentication & Roles
 
-### 2) Frontend (Next.js)
+- User Registration & Login
+- Admin Login System
+- Session-Based Authentication
+- Protected Admin Dashboard
 
-```powershell
-cd frontend
-npm install
-copy .env.local.example .env.local
-npm run dev
-```
+---
 
-Frontend URL: `http://localhost:3000`
+## 🎯 Problems It Solves
 
-## Environment Files
+AutoMart AI simplifies spare-parts shopping by helping users identify compatible products based on vehicle type, reducing incorrect purchases and improving customer confidence.
 
-- Backend template: `backend_python/.env.example`
-- Frontend template: `frontend/.env.local.example`
-- Deployment matrix: [DEPLOYMENT_ENV_MATRIX.md](DEPLOYMENT_ENV_MATRIX.md)
+The platform:
+- streamlines compatibility-based shopping
+- improves product discovery
+- centralizes inventory management
+- enhances ecommerce experience using AI assistance
 
-## Payment Options
+---
 
-AutoMart supports 2 project-level payment modes:
+## 📦 Architecture Highlights
 
-1. Demo mode (no real gateway):
-- Leave Razorpay keys empty in backend env
-- Checkout shows demo payment result selector
+- Full stack frontend/backend architecture
+- RESTful API communication
+- Modular ecommerce workflow
+- AI-assisted recommendation system
+- Role-based administrative controls
+- Scalable inventory management structure
 
-2. Razorpay sandbox mode:
-- Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in backend env
-- UPI/Card opens Razorpay test checkout modal
-- Backend verifies payment signature before confirming order
-
-## API Tests
-
-```powershell
-cd backend_python
-python run_api_tests.py
-```
-
-## Demo Credentials (seeded)
-
-- Admin: `admin@automart.local` / `admin123`
-- User: `demo@automart.local` / `demo123`
-
-## Deployment (Free-Tier Friendly)
-
-Recommended:
-
-- Frontend: Vercel (Hobby)
-- Backend: Render (Free Web Service)
-- Images: Cloudinary Free
-
-Refer [DEPLOYMENT_ENV_MATRIX.md](DEPLOYMENT_ENV_MATRIX.md) for exact env variable mapping.
-
-## Project Documents
-
-- [AUTOMART_GAP_ANALYSIS.md](AUTOMART_GAP_ANALYSIS.md)
-- [FINAL_QA_CHECKLIST.md](FINAL_QA_CHECKLIST.md)
-- [SPARE_PARTS_GUIDE.md](SPARE_PARTS_GUIDE.md)
-- [REPO_STRUCTURE.md](REPO_STRUCTURE.md)
+---
